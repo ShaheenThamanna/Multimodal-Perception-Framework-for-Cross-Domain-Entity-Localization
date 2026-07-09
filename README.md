@@ -1,96 +1,124 @@
 # Multimodal Perception Framework for Cross-Domain Entity Localization
 
-Find *only the objects you asked for* in an image — not every object in it.
+A web app that finds specific objects in a photo based on a plain-English description — powered by multiple YOLO models and NLP for smarter, query-aware detection.
 
-Type a natural-language query like `"find the banana"`, upload any photo, and the system runs three independent detection models in parallel, merges their outputs, and highlights only the objects that match your query — with everything else shown faded out for context.
+Upload any image, type something like `"find the banana"`, and the app highlights only the object you asked for — everything else in the photo is shown faded out, so the result is easy to read at a glance.
 
 ![Detection demo](docs/demo_result.png)
 
 ---
 
-## Why this exists
+## What it does (in simple terms)
 
-Standard object detectors (YOLO, Faster R-CNN, etc.) return a fixed list of classes and detect *everything* in the image. That's rarely what a user actually wants — most of the time you're looking for one specific thing described in plain English, and the object might not even be in the model's training vocabulary.
+Most object detection tools show you *everything* they can find in a photo — every person, every chair, every random object — whether you care about it or not.
 
-This project bridges that gap: it takes a free-text query, expands it linguistically (synonyms, noun phrases), runs it against **three complementary detection backbones** so vocabulary gaps in one model are covered by another, deduplicates overlapping detections across models, and returns only the query-relevant results.
+This app is different: you tell it what you're looking for in normal English, and it shows you only that. Behind the scenes, it runs **three different AI detection models at once** so it doesn't miss things, understands your query using **basic NLP (language processing)**, and then combines all the results into one clean, readable image.
 
-## How it works
+## Features
 
-```mermaid
-flowchart LR
-    A[Image + Text Query] --> B[spaCy: extract nouns & noun chunks]
-    B --> C[WordNet: expand synonyms]
-    A --> D[YOLOv8x — COCO, 80 classes]
-    A --> E[YOLOv8x-oiv7 — Open Images, 601 classes]
-    C --> F[YOLO-World v2 — open-vocabulary, queried classes]
-    D --> G[Cross-model NMS / dedup]
-    E --> G
-    F --> G
-    C --> H[Match against query terms]
-    G --> H
-    H --> I[Annotated image: matched = green box, rest = greyed]
+- **Plain-English search** — no need to know exact object category names, just describe what you want
+- **Three detection models running together** — covers a much wider range of objects than any single model alone
+- **Smart word matching** — understands synonyms (e.g. "auto" also matches "car") using WordNet
+- **Duplicate removal** — if two models detect the same object, only one clean box is kept, not two overlapping ones
+- **Visual highlighting** — matched objects get a bold green box with a confidence score; everything else fades into the background
+- **Simple web interface** — upload an image, type a query, click a button, see the result
+
+## Keyboard shortcuts
+
+This app is a standard web form, so it doesn't have custom keyboard shortcuts yet — just normal browser behavior (e.g. pressing **Enter** while typing in the query box submits the form, and **Tab** moves between the upload field and text box). Adding real shortcuts (like a hotkey to trigger the search) is listed below as a possible improvement.
+
+## Technology used
+
+| Tool | What it's used for |
+|---|---|
+| **Python** | The main programming language |
+| **Flask** | Runs the web app and handles the upload/search page |
+| **YOLOv8x** | Detects common, everyday objects (80 categories) |
+| **YOLOv8x-oiv7** | Detects a much wider range of objects (601 categories) |
+| **YOLO-World v2** | Detects *any* object you describe, even ones the other two models don't know |
+| **spaCy** | Reads your text query and picks out the important words (nouns) |
+| **NLTK WordNet** | Expands those words into similar/synonym words, so more matches are caught |
+| **OpenCV** | Draws the boxes and labels on the final image |
+| **NumPy** | Helps with number crunching behind the scenes |
+
+## How it works (step by step)
+
+1. **You upload a photo and type a description**, like "find the banana."
+2. **The text is read by spaCy**, which picks out the important nouns from your sentence.
+3. **WordNet expands those words** into similar words, so if you typed "auto," it also checks for "car."
+4. **Three detection models scan the photo at the same time:**
+   - One trained on common objects
+   - One trained on a much bigger object list
+   - One that can detect literally anything you typed, even unusual objects
+5. **All the results are combined**, and duplicate detections (same object found by two models) are cleaned up automatically.
+6. **The final image is drawn** — objects that match your query are shown in green with confidence scores, everything else is faded out.
+7. **The result is shown back to you** in the browser, along with a list of everything detected.
+
+## How to run this project
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/ShaheenThamanna/Multimodal-Perception-Framework-for-Cross-Domain-Entity-Localization.git
+cd Multimodal-Perception-Framework-for-Cross-Domain-Entity-Localization
 ```
 
-**Three models, three jobs:**
-
-| Model | Vocabulary | Role |
-|---|---|---|
-| YOLOv8x | 80 COCO classes | High-accuracy detection for common objects |
-| YOLOv8x-oiv7 | 601 Open Images classes | Covers fine-grained categories COCO misses (food, fruit, body parts, etc.) |
-| YOLO-World v2 | Unbounded (open-vocabulary) | Detects whatever nouns the query mentions, even if neither fixed model was trained on that class |
-
-**Query understanding pipeline:**
-1. spaCy extracts nouns and noun phrases from the query
-2. WordNet expands each noun into its synonym set (so "auto" also matches "car")
-3. The expanded noun list is fed directly into YOLO-World's `set_classes()` at inference time
-4. Detections from the two fixed-vocabulary models are matched against the same expanded term set
-
-**Merging results:**
-All detections from all three models are pooled, then a custom IoU-based non-max suppression pass removes duplicate boxes across models (e.g. if both YOLOv8x and YOLO-World both find the same banana, only the higher-confidence box survives). Matched detections are drawn with a bold green box and confidence label; everything else is drawn faint and unlabeled, so the output image reads at a glance.
-
-## Tech stack
-
-`Python` · `Flask` · `Ultralytics YOLOv8` · `YOLO-World v2` · `spaCy` · `NLTK WordNet` · `OpenCV` · `NumPy`
-
-## Getting started
-
+**2. Create a virtual environment (recommended)**
 ```bash
-git clone https://github.com/<your-username>/multimodal-entity-localization.git
-cd multimodal-entity-localization
+python -m venv venv
+venv\Scripts\activate      # Windows
+source venv/bin/activate   # Mac/Linux
+```
+
+**3. Install the required libraries**
+```bash
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
+```
+
+**4. Run the app**
+```bash
 python app.py
 ```
 
-Then open `http://127.0.0.1:5000`, upload an image, type a description, and run.
+**5. Open your browser** and go to:
+```
+http://127.0.0.1:5000
+```
 
-> Note: the three YOLO checkpoints (`yolov8x.pt`, `yolov8x-oiv7.pt`, `yolov8x-worldv2.pt`) download automatically via Ultralytics on first run. They're large (~130MB each) — expect a delay the first time.
+> The first time you run it, the three YOLO model files will download automatically (they're large, around 130MB each) — this may take a few minutes depending on your internet speed.
+
+## What I learned building this
+
+- How to combine **multiple AI models** together instead of relying on just one, and why that actually improves results in the real world
+- How **basic NLP** (spaCy + WordNet) can be used to understand human language well enough to guide a computer vision task
+- How to remove duplicate detections across different models using **IoU (Intersection over Union)** — a core computer vision concept
+- How to build and structure a full **Flask web application** from scratch, connecting a frontend form to a Python backend
+- Practical **Git and GitHub skills** — setting up `.gitignore` properly, keeping large model files out of version control, and pushing a clean project to GitHub
+
+## Overall growth
+
+This project pushed me beyond just following a tutorial — I had to make real design decisions: which models to combine, how to merge their outputs without conflicts, how to make the results actually readable for a user instead of just a wall of bounding boxes. It also gave me hands-on experience with the full lifecycle of a project — from writing code, to testing it, to properly packaging and publishing it on GitHub in a way that's usable by someone else.
+
+## What can be improved
+
+- **Speed** — right now all three models run one after another on the CPU, which is slow. Using a GPU or running the models in parallel would make it much faster.
+- **Better confidence comparison** — the three models don't score confidence in exactly the same way, so results aren't perfectly comparable yet.
+- **Smarter matching** — instead of just matching words and synonyms, using sentence embeddings (a more advanced NLP technique) could catch even more relevant matches.
+- **Keyboard shortcuts and UI polish** — small usability additions like a hotkey to trigger search, drag-and-drop upload, or a loading spinner.
+- **Automated testing** — adding proper test cases so future changes don't accidentally break the detection logic.
+- **Deployment** — currently this only runs on your own computer; hosting it online (e.g. on Render or Railway) would let anyone try it without installing anything.
 
 ## Project structure
 
 ```
-├── app.py                  # Flask app + full detection pipeline
-├── requirements.txt
+├── app.py                  # Main Flask app and detection pipeline
+├── requirements.txt         # Python libraries needed to run the project
 ├── templates/
-│   └── index.html          # Upload form + results UI
+│   └── index.html           # The web page (upload form + results)
 └── static/
-    ├── uploads/             # User-submitted images (gitignored)
-    └── outputs/             # Annotated results (gitignored)
+    ├── uploads/              # Stores uploaded images (not tracked in Git)
+    └── outputs/              # Stores result images (not tracked in Git)
 ```
-
-## Design decisions worth asking about
-
-- **Why three models instead of one?** No single fixed-vocabulary model covers every object a user might describe. Running a COCO model, an Open Images model, and an open-vocabulary model in parallel trades some compute for much broader real-world coverage, without retraining anything.
-- **Why cross-model NMS instead of just picking one model's output?** Overlapping detections from different backbones on the same object would otherwise show duplicate boxes. IoU-based suppression keeps only the highest-confidence box per real-world object regardless of which model found it.
-- **Why WordNet synonym expansion?** A query like "find the auto" should still match a detector's "car" label. Expanding the query into a synonym set closes that vocabulary gap without needing a fine-tuned language-vision model.
-- **Known limitation:** running all three models sequentially on CPU is not fast enough for real-time use — this is a correctness-first proof of concept, not a production inference service. GPU inference and model result caching would be the first steps toward that.
-
-## Future improvements
-
-- Swap sequential CPU inference for batched GPU inference to cut latency
-- Add confidence calibration across models (their score scales aren't directly comparable)
-- Replace WordNet expansion with a small sentence-embedding similarity check for more robust matching
-- Add automated tests around the NMS merge logic and query parsing
 
 ## Authors
 
