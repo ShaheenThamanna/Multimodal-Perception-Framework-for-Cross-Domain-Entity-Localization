@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MPFCEL — Entity Localization</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --white:      #ffffff;
+      --gray-50:    #f8f9fa;
+      --gray-100:   #f1f3f5;
+      --gray-200:   #e9ecef;
+      --gray-300:   #dee2e6;
+      --gray-400:   #adb5bd;
+      --gray-500:   #6c757d;
+      --gray-700:   #495057;
+      --gray-900:   #212529;
+      --blue:       #2563eb;
+      --blue-light: #eff6ff;
+      --blue-dark:  #1d4ed8;
+      --green:      #16a34a;
+      --green-light:#f0fdf4;
+      --amber:      #d97706;
+      --amber-light:#fffbeb;
+      --orange:     #ea580c;
+      --orange-light:#fff7ed;
+      --red:        #dc2626;
+      --red-light:  #fef2f2;
+      --purple:     #7c3aed;
+      --purple-light:#f5f3ff;
+      --radius:     6px;
+      --shadow-sm:  0 1px 2px rgba(0,0,0,.06);
+      --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md:  0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+      --font:       'DM Sans', sans-serif;
+      --mono:       'DM Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--gray-50);
+      color: var(--gray-900);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      height: 56px;
+      display: flex; align-items: center;
+      padding: 0 32px; gap: 12px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .topbar-icon {
+      width: 28px; height: 28px;
+      background: var(--blue); border-radius: 6px;
+      display: grid; place-items: center;
+    }
+    .topbar-icon svg { width: 16px; height: 16px; fill: white; }
+    .topbar-name { font-weight: 600; font-size: 15px; color: var(--gray-900); letter-spacing: -.2px; }
+    .topbar-divider { width: 1px; height: 20px; background: var(--gray-200); margin: 0 4px; }
+    .topbar-sub { font-size: 13px; color: var(--gray-400); }
+    .topbar-badge {
+      margin-left: auto;
+      background: var(--blue-light); color: var(--blue);
+      font-size: 11px; font-weight: 500;
+      padding: 3px 9px; border-radius: 20px;
+      border: 1px solid #bfdbfe;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 28px 32px 24px;
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--gray-400); margin-bottom: 10px;
+    }
+    .breadcrumb span { color: var(--gray-500); }
+    .page-header h1 {
+      font-size: 22px; font-weight: 600;
+      letter-spacing: -.4px; color: var(--gray-900); line-height: 1.2;
+    }
+    .page-header p {
+      margin-top: 5px; font-size: 13px;
+      color: var(--gray-500); font-weight: 300;
+    }
+    .header-pills { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 12px; border: 1px solid var(--gray-200);
+      background: var(--gray-50); color: var(--gray-500);
+    }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .6; }
+
+    /* ── Layout ── */
+    .layout {
+      max-width: 1280px; margin: 0 auto;
+      padding: 28px 32px 60px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px; align-items: start;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card-header {
+      padding: 14px 20px 13px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+    .card-label { font-size: 11px; color: var(--gray-400); font-family: var(--mono); }
+    .card-body { padding: 20px; }
+
+    /* ── Model status grid ── */
+    .model-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--gray-100);
+      border-top: 1px solid var(--gray-100);
+      border-bottom-left-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
+      overflow: hidden;
+    }
+    .model-cell {
+      background: var(--white);
+      padding: 12px 14px;
+    }
+    .model-cell-top {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 4px;
+    }
+    .model-name { font-size: 12px; font-weight: 500; color: var(--gray-700); }
+    .model-status {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 500;
+      padding: 2px 7px; border-radius: 20px; border: 1px solid;
+    }
+    .model-status .dot { width: 5px; height: 5px; border-radius: 50%; }
+    .status-on  { color: var(--green); border-color: #bbf7d0; background: var(--green-light); }
+    .status-on .dot  { background: var(--green); }
+    .status-off { color: var(--gray-400); border-color: var(--gray-200); background: var(--gray-50); }
+    .status-off .dot { background: var(--gray-300); }
+    .model-meta { font-size: 11px; color: var(--gray-400); }
+    .model-classes { font-weight: 500; color: var(--gray-600); }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 18px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--gray-700); margin-bottom: 6px; }
+    .form-hint  { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+
+    .file-zone {
+      border: 1px dashed var(--gray-300); border-radius: var(--radius);
+      padding: 28px 20px; text-align: center;
+      cursor: pointer; transition: border-color .15s, background .15s;
+      background: var(--gray-50);
+    }
+    .file-zone:hover { border-color: var(--blue); background: var(--blue-light); }
+    .file-zone input { display: none; }
+    .file-zone-icon {
+      width: 36px; height: 36px; background: var(--gray-100);
+      border-radius: 8px; display: inline-grid; place-items: center; margin-bottom: 10px;
+    }
+    .file-zone-icon svg { width: 18px; height: 18px; stroke: var(--gray-400); fill: none; }
+    .file-zone-text { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
+    .file-zone-text strong { color: var(--blue); font-weight: 500; }
+    .file-zone-meta { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+    .file-name-display { margin-top: 10px; font-size: 12px; color: var(--green); font-family: var(--mono); display: none; }
+    .file-name-display.visible { display: block; }
+
+    .text-input {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid var(--gray-300); border-radius: var(--radius);
+      font-family: var(--font); font-size: 13px; color: var(--gray-900);
+      background: var(--white); outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .text-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .text-input::placeholder { color: var(--gray-400); }
+
+    .btn-primary {
+      width: 100%; padding: 10px 16px;
+      background: var(--blue); color: white;
+      font-family: var(--font); font-size: 13px; font-weight: 500;
+      border: none; border-radius: var(--radius);
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+      transition: background .15s; box-shadow: 0 1px 2px rgba(37,99,235,.3);
+    }
+    .btn-primary:hover { background: var(--blue-dark); }
+    .btn-primary svg { width: 14px; height: 14px; stroke: white; fill: none; }
+
+    .separator { border: none; border-top: 1px solid var(--gray-100); margin: 18px 0; }
+
+    /* ── Alerts ── */
+    .alert {
+      display: flex; gap: 10px;
+      padding: 11px 14px; border-radius: var(--radius);
+      font-size: 13px; margin-bottom: 16px; border: 1px solid;
+    }
+    .alert svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+    .alert-error { background: var(--red-light);   border-color: #fecaca; color: var(--red);   }
+    .alert-warn  { background: var(--amber-light);  border-color: #fde68a; color: var(--amber); }
+
+    /* ── Spinner ── */
+    #spinner {
+      display: none; position: fixed; inset: 0;
+      background: rgba(248,249,250,.92); z-index: 999;
+      flex-direction: column; align-items: center; justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    #spinner.active { display: flex; }
+    .spinner-wrap {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: 12px; padding: 36px 48px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 14px; box-shadow: var(--shadow-md);
+    }
+    .spin-ring {
+      width: 40px; height: 40px;
+      border: 3px solid var(--gray-200); border-top-color: var(--blue);
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+    .spin-steps {
+      display: flex; flex-direction: column; gap: 6px; width: 100%;
+    }
+    .spin-step {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--gray-400); font-family: var(--mono);
+    }
+    .spin-step-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gray-300); flex-shrink: 0;
+    }
+
+    /* ── Right col ── */
+    .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── Stats ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--gray-100);
+      border-top: 1px solid var(--gray-100);
+    }
+    .stat-cell { background: var(--white); padding: 14px 20px; text-align: center; }
+    .stat-num { font-size: 22px; font-weight: 600; letter-spacing: -.5px; color: var(--gray-900); }
+    .stat-num.blue  { color: var(--blue); }
+    .stat-num.green { color: var(--green); }
+    .stat-num.orange{ color: var(--orange); }
+    .stat-desc { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+    /* ── Images ── */
+    .img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .img-cell { position: relative; }
+    .img-cell img { width: 100%; display: block; border-radius: 4px; border: 1px solid var(--gray-200); }
+    .img-label {
+      position: absolute; top: 8px; left: 8px;
+      background: rgba(255,255,255,.92); border: 1px solid var(--gray-200);
+      border-radius: 4px; font-size: 11px; font-weight: 500;
+      color: var(--gray-600); padding: 3px 8px; box-shadow: var(--shadow-sm);
+    }
+    .img-label.result { color: var(--green); border-color: #bbf7d0; background: rgba(240,253,244,.95); }
+
+    .match-row {
+      padding: 12px 20px; border-top: 1px solid var(--gray-100);
+      display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    }
+    .match-row-label {
+      font-size: 11px; font-weight: 500;
+      color: var(--gray-400); text-transform: uppercase;
+      letter-spacing: .5px; margin-right: 4px;
+    }
+    .tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 500;
+    }
+    .tag-green { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
+
+    /* ── Detection table ── */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 500; color: var(--gray-400);
+      text-transform: uppercase; letter-spacing: .5px;
+      background: var(--gray-50); border-bottom: 1px solid var(--gray-200);
+    }
+    tbody tr { border-bottom: 1px solid var(--gray-100); transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--gray-50); }
+    tbody td { padding: 11px 16px; }
+
+    .entity-name { font-weight: 500; color: var(--gray-900); display: flex; align-items: center; gap: 8px; }
+    .entity-name.unmatched { color: var(--gray-400); font-weight: 400; }
+
+    .conf-wrap { display: flex; align-items: center; gap: 10px; }
+    .conf-bar  { flex: 1; height: 5px; background: var(--gray-100); border-radius: 99px; overflow: hidden; min-width: 60px; }
+    .conf-fill { height: 100%; border-radius: 99px; background: var(--gray-300); }
+    .conf-fill.med  { background: var(--blue); }
+    .conf-fill.high { background: var(--green); }
+    .conf-pct { font-size: 12px; color: var(--gray-500); font-family: var(--mono); min-width: 42px; text-align: right; }
+
+    /* source badge */
+    .src-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 500; font-family: var(--mono);
+      border: 1px solid; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .src-coco  { color: var(--blue);   border-color: #bfdbfe; background: var(--blue-light); }
+    .src-oiv7  { color: var(--green);  border-color: #bbf7d0; background: var(--green-light); }
+    .src-world { color: var(--orange); border-color: #fed7aa; background: var(--orange-light); }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 500; border: 1px solid;
+    }
+    .status-badge .dot { width: 5px; height: 5px; border-radius: 50%; }
+    .badge-matched { background: var(--green-light); color: var(--green); border-color: #bbf7d0; }
+    .badge-matched .dot { background: var(--green); }
+    .badge-other   { background: var(--gray-50); color: var(--gray-400); border-color: var(--gray-200); }
+    .badge-other .dot  { background: var(--gray-300); }
+
+    /* ── Empty state ── */
+    .empty-state { padding: 80px 40px; text-align: center; }
+    .empty-icon  {
+      width: 56px; height: 56px; background: var(--gray-100);
+      border-radius: 12px; display: inline-grid; place-items: center; margin-bottom: 16px;
+    }
+    .empty-icon svg { width: 28px; height: 28px; stroke: var(--gray-300); fill: none; }
+    .empty-state h3 { font-size: 15px; font-weight: 500; color: var(--gray-700); margin-bottom: 6px; }
+    .empty-state p  { font-size: 13px; color: var(--gray-400); max-width: 300px; margin: 0 auto; }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; padding: 16px; }
+      .img-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .model-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Spinner -->
+<div id="spinner">
+  <div class="spinner-wrap">
+    <div class="spin-ring"></div>
+    <div class="spin-label">Running multi-model inference…</div>
+    <div class="spin-steps">
+      <div class="spin-step"><div class="spin-step-dot"></div>YOLOv8x — COCO 80 classes</div>
+      <div class="spin-step"><div class="spin-step-dot"></div>YOLOv8x-OIv7 — Open Images 601 classes</div>
+      <div class="spin-step"><div class="spin-step-dot"></div>YOLO-World — open-vocabulary query</div>
+      <div class="spin-step"><div class="spin-step-dot"></div>NMS merge + NLP matching</div>
+    </div>
+  </div>
+</div>
+
+<!-- Topbar -->
+<nav class="topbar">
+  <div class="topbar-icon">
+    <svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/></svg>
+  </div>
+  <span class="topbar-name">MPFCEL</span>
+  <div class="topbar-divider"></div>
+  <span class="topbar-sub">Entity Localization</span>
+  <span class="topbar-badge">Multi-Model Pipeline</span>
+</nav>
+
+<!-- Page header -->
+<div class="page-header">
+  <div class="breadcrumb">
+    <span>Research</span><span>›</span>
+    <span>Multimodal Perception</span><span>›</span>
+    <span style="color:var(--gray-700)">Entity Localization</span>
+  </div>
+  <h1>Multimodal Perception Framework<br>for Cross-Domain Entity Localization</h1>
+  <p>Three detection models run in parallel — results are merged via NMS and matched against your natural language query.</p>
+  <div class="header-pills">
+    <span class="pill"><span class="pill-dot" style="color:var(--blue)"></span>YOLOv8x · COCO 80</span>
+    <span class="pill"><span class="pill-dot" style="color:var(--green)"></span>YOLOv8x-OIv7 · 601 classes</span>
+    <span class="pill"><span class="pill-dot" style="color:var(--orange)"></span>YOLO-World · open-vocab</span>
+    <span class="pill"><span class="pill-dot" style="color:var(--purple)"></span>spaCy + WordNet NLP</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Left -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <!-- Input card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Input</span>
+        <span class="card-label">Step 1 of 1</span>
+      </div>
+      <div class="card-body">
+
+        {% if error %}
+        <div class="alert alert-error">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        {% if warning %}
+        <div class="alert alert-warn">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>{{ warning }}</span>
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" id="mainForm">
+          <div class="form-group">
+            <label class="form-label">Image file</label>
+            <div class="file-zone" onclick="document.getElementById('fileInput').click()">
+              <div class="file-zone-icon">
+                <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <div class="file-zone-text"><strong>Click to upload</strong> or drag and drop</div>
+              <div class="file-zone-meta">JPG, PNG, WEBP, BMP — max 16 MB</div>
+              <div class="file-name-display" id="fileNameDisplay"></div>
+              <input type="file" id="fileInput" name="image"
+                     accept=".jpg,.jpeg,.png,.webp,.bmp" required
+                     onchange="onFileChange(this)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="queryInput">Natural language query</label>
+            <input class="text-input" type="text" id="queryInput" name="text"
+                   placeholder="e.g. Find the strawberry, person, or car"
+                   value="{{ query_text }}" required>
+            <div class="form-hint">All three models + synonyms are used automatically. The more specific, the better.</div>
+          </div>
+
+          <hr class="separator">
+          <button class="btn-primary" type="submit">
+            <svg viewBox="0 0 24 24" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Multi-Model Localization
+          </button>
+        </form>
+      </div>
+
+      <!-- Model status -->
+      {% if models_info %}
+      <div class="model-grid">
+        {% for m in models_info %}
+        <div class="model-cell">
+          <div class="model-cell-top">
+            <span class="model-name">{{ m.name }}</span>
+            <span class="model-status {{ 'status-on' if m.active else 'status-off' }}">
+              <span class="dot"></span>{{ 'Active' if m.active else 'Offline' }}
+            </span>
+          </div>
+          <div class="model-meta"><span class="model-classes">{{ m.classes }}</span> classes · {{ m.dataset }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Summary stats -->
+    {% if all_objects %}
+    <div class="card">
+      <div class="card-header"><span class="card-title">Run Summary</span></div>
+      <div class="stats-row">
+        <div class="stat-cell">
+          <div class="stat-num">{{ all_objects|length }}</div>
+          <div class="stat-desc">Total detections</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num green">{{ matched_objects|length }}</div>
+          <div class="stat-desc">Matched</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num blue">
+            {% if all_objects %}{{ ((matched_objects|length / all_objects|length) * 100)|int }}%{% else %}0%{% endif %}
+          </div>
+          <div class="stat-desc">Match rate</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num orange">
+            {% set world_count = all_objects | selectattr('source', 'equalto', 'yolo-world') | list | length %}
+            {{ world_count }}
+          </div>
+          <div class="stat-desc">Open-vocab hits</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Right -->
+  <div class="right-col">
+
+    {% if output_image %}
+
+    <!-- Images -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Visual Output</span>
+        <span class="card-label">Original vs. Localized</span>
+      </div>
+      <div class="card-body">
+        <div class="img-grid">
+          <div class="img-cell">
+            <img src="{{ input_image }}" alt="Original">
+            <div class="img-label">Original</div>
+          </div>
+          <div class="img-cell">
+            <img src="{{ output_image }}" alt="Result">
+            <div class="img-label result">Localized</div>
+          </div>
+        </div>
+      </div>
+      {% if matched_objects %}
+      <div class="match-row">
+        <span class="match-row-label">Matched</span>
+        {% for obj in matched_objects %}<span class="tag tag-green">{{ obj }}</span>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Detection table -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">All Detections</span>
+        <span class="card-label">{{ all_objects|length }} object{{ 's' if all_objects|length != 1 }} · sorted by confidence</span>
+      </div>
+      {% if all_objects %}
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:36px">#</th>
+              <th>Entity</th>
+              <th>Confidence</th>
+              <th>Source model</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for obj in all_objects %}
+            <tr>
+              <td style="color:var(--gray-400);font-family:var(--mono);font-size:12px;">{{ loop.index }}</td>
+              <td>
+                <span class="entity-name {{ '' if obj.matched else 'unmatched' }}">
+                  {% if obj.matched %}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  {% endif %}
+                  {{ obj.label }}
+                </span>
+              </td>
+              <td>
+                <div class="conf-wrap">
+                  <div class="conf-bar">
+                    <div class="conf-fill {% if obj.confidence >= 70 %}high{% elif obj.confidence >= 45 %}med{% endif %}"
+                         style="width:{{ obj.confidence }}%"></div>
+                  </div>
+                  <span class="conf-pct">{{ obj.confidence }}%</span>
+                </div>
+              </td>
+              <td>
+                {% if obj.source == 'coco' %}
+                  <span class="src-badge src-coco">YOLOv8x</span>
+                {% elif obj.source == 'oiv7' %}
+                  <span class="src-badge src-oiv7">OIv7</span>
+                {% else %}
+                  <span class="src-badge src-world">World</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if obj.matched %}
+                  <span class="status-badge badge-matched"><span class="dot"></span>Matched</span>
+                {% else %}
+                  <span class="status-badge badge-other"><span class="dot"></span>Not matched</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+
+    {% else %}
+    <div class="card">
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <h3>No results yet</h3>
+        <p>Upload an image and enter a query to run the three-model localization pipeline.</p>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+  function onFileChange(input) {
+    const el = document.getElementById('fileNameDisplay');
+    if (input.files && input.files[0]) {
+      el.textContent = '✓ ' + input.files[0].name;
+      el.classList.add('visible');
+    }
+  }
+  document.getElementById('mainForm').addEventListener('submit', function() {
+    document.getElementById('spinner').classList.add('active');
+  });
+</script>
+</body>
+</html>

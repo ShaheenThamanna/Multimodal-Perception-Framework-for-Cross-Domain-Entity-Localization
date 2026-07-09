@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Flask runtime data
+static/uploads/*
+static/outputs/*
+!static/uploads/.gitkeep
+!static/outputs/.gitkeep
+
+# Model checkpoints (large files, downloaded automatically by Ultralytics)
+*.pt
+*.onnx
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# NLTK data cache
+nltk_data/
+.qodo/

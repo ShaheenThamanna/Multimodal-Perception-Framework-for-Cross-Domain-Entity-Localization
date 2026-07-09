@@ -1,0 +1,6 @@
+Flask>=3.0.0
+ultralytics>=8.2.0
+spacy>=3.7.0
+nltk>=3.8.1
+opencv-python>=4.9.0
+numpy>=1.26.0
