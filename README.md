@@ -3,11 +3,11 @@
 A web app that finds specific objects in a photo based on a plain-English description — powered by multiple YOLO models and NLP for smarter, query-aware detection.
 
 <p align="center">
-  <img src="C:\Perception Model\MULTIMODAL PERCEPTION FRAMEWORK FOR CROSS-DOMAIN ENTITY LOCALIZATION\Sample_Images\outputs\Localizing_feathers.png" width="900">
+  <img src="Sample_Images\Perception_Model _UI.png" width="900">
 </p>
 
 Upload any image, type something like `"find the banana"`, and the app highlights only the object you asked for , everything else in the photo is shown faded out, so the result is easy to read at a glance.
-
+ <img src="Sample_Images\outputs\Localizing_feathers.png" width="350">
  <img src="Sample_Images\outputs\Multiple_Localization.png" width="350">
 
 ## What it does (in simple terms)
