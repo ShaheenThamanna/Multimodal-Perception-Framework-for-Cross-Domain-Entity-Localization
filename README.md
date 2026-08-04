@@ -6,8 +6,10 @@ A web app that finds specific objects in a photo based on a plain-English descri
   <img src="Sample_Images\Perception_Model _UI.png" width="900">
 </p>
 
-Upload any image, type something like `"find the banana"`, and the app highlights only the object you asked for , everything else in the photo is shown faded out, so the result is easy to read at a glance.
+Upload any image, type something like `"find the Feather" Example 1 , "find the flowers" Example 2`, and the app highlights only the object you asked for , everything else in the photo is shown faded out, so the result is easy to read at a glance.
+<h6>Example 1</h6>
  <img src="Sample_Images\outputs\Localizing_feathers.png" width="350">
+ <h6>Example 2</h6>
  <img src="Sample_Images\outputs\Multiple_Localization.png" width="350">
 
 ## What it does (in simple terms)
