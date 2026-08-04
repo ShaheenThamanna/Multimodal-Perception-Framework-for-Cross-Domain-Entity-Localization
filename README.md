@@ -43,7 +43,7 @@ This app is a standard web form, so it doesn't have custom keyboard shortcuts ye
 
 ## How it works (step by step)
 
-1. **You upload a photo and type a description**, like "find the banana."
+1. **You upload a photo and type a description**, like "find the Feather."
 2. **The text is read by spaCy**, which picks out the important nouns from your sentence.
 3. **WordNet expands those words** into similar words, so if you typed "auto," it also checks for "car."
 4. **Three detection models scan the photo at the same time:**
