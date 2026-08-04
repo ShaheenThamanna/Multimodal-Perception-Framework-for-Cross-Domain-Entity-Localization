@@ -7,10 +7,21 @@ A web app that finds specific objects in a photo based on a plain-English descri
 </p>
 
 Upload any image, type something like `"find the Feather" Example 1 , "find the flowers" Example 2`, and the app highlights only the object you asked for , everything else in the photo is shown faded out, so the result is easy to read at a glance.
-<h6>Example 1</h6>
- <img src="Sample_Images\outputs\Localizing_feathers.png" width="350">
- <h6>Example 2</h6>
- <img src="Sample_Images\outputs\Multiple_Localization.png" width="350">
+
+<table>
+  <tr>
+    <th>Input Image</th>
+    <th>Detection Result</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="Sample_Images/inputs/Input1.webp" width="400">
+    </td>
+    <td align="center">
+      <img src="Sample_Images/outputs/Localizing_feathers.png" width="400">
+    </td>
+  </tr>
+</table>
 
 ## What it does (in simple terms)
 
@@ -67,29 +78,78 @@ cd Multimodal-Perception-Framework-for-Cross-Domain-Entity-Localization
 ```
 
 **2. Create a virtual environment (recommended)**
+#### 🪟 Windows
+
 ```bash
-python -m venv venv
-venv\Scripts\activate      # Windows
-source venv/bin/activate   # Mac/Linux
+py -3.11 -m venv venv
+venv\Scripts\activate
+```
+
+#### 🍎 macOS
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+#### 🐧 Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
 ```
 
 **3. Install the required libraries**
+
 ```bash
 pip install -r requirements.txt
+```
+### 4. Download the spaCy language model
+
+#### 🪟 Windows
+
+```bash
 python -m spacy download en_core_web_sm
+
 ```
 
-**4. Run the app**
+#### 🍎 macOS / 🐧 Linux
+
+```bash
+python3 -m spacy download en_core_web_sm
+```
+
+---
+
+### 5. Run the application
+
+#### 🪟 Windows
+
 ```bash
 python app.py
 ```
 
-**5. Open your browser** and go to:
+#### 🍎 macOS / 🐧 Linux
+
+```bash
+python3 app.py
 ```
+
+---
+
+### 6. Open the application
+
+Open your browser and visit:
+
+```text
 http://127.0.0.1:5000
 ```
 
+
+
 > The first time you run it, the three YOLO model files will download automatically (they're large, around 130MB each) — this may take a few minutes depending on your internet speed.
+
+Tested Environment: Windows 11 (64-bit), Python 3.11, Flask, Ultralytics YOLOv8, spaCy 3.x. 
 
 ## What I learned building this
 
