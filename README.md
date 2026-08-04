@@ -2,21 +2,25 @@
 
 A web app that finds specific objects in a photo based on a plain-English description — powered by multiple YOLO models and NLP for smarter, query-aware detection.
 
-Upload any image, type something like `"find the banana"`, and the app highlights only the object you asked for — everything else in the photo is shown faded out, so the result is easy to read at a glance.
+<p align="center">
+  <img src="Sample_Images\Perception_Model _UI.png" width="900">
+</p>
 
-![Detection demo](docs/demo_result.png)
-
----
+Upload any image, type something like `"find the Feather" Example 1 , "find the flowers" Example 2`, and the app highlights only the object you asked for , everything else in the photo is shown faded out, so the result is easy to read at a glance.
+<h6>Example 1</h6>
+ <img src="Sample_Images\outputs\Localizing_feathers.png" width="350">
+ <h6>Example 2</h6>
+ <img src="Sample_Images\outputs\Multiple_Localization.png" width="350">
 
 ## What it does (in simple terms)
 
-Most object detection tools show you *everything* they can find in a photo — every person, every chair, every random object — whether you care about it or not.
+Most object detection tools show you everything they can find in a photo — every person, every chair, every random object whether you care about it or not.
 
-This app is different: you tell it what you're looking for in normal English, and it shows you only that. Behind the scenes, it runs **three different AI detection models at once** so it doesn't miss things, understands your query using **basic NLP (language processing)**, and then combines all the results into one clean, readable image.
+This app is different you tell it what you're looking for in normal English, and it shows you only that. Behind the scenes, it runs **three different AI detection models at once** so it doesn't miss things, understands your query using **basic NLP (language processing)**, and then combines all the results into one clean, readable image.
 
 ## Features
 
-- **Plain-English search** — no need to know exact object category names, just describe what you want
+- **Plain-English search**  - no need to know exact object category names, just describe what you want
 - **Three detection models running together** — covers a much wider range of objects than any single model alone
 - **Smart word matching** — understands synonyms (e.g. "auto" also matches "car") using WordNet
 - **Duplicate removal** — if two models detect the same object, only one clean box is kept, not two overlapping ones
@@ -30,7 +34,7 @@ This app is a standard web form, so it doesn't have custom keyboard shortcuts ye
 ## Technology used
 
 | Tool | What it's used for |
-|---|---|
+
 | **Python** | The main programming language |
 | **Flask** | Runs the web app and handles the upload/search page |
 | **YOLOv8x** | Detects common, everyday objects (80 categories) |
